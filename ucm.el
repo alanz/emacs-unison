@@ -87,6 +87,7 @@
   (gethash "namespaceListingChildren" (ucm-codebase-list ucm-result)))
 
 (defun ucm-list ()
+  "List the current directory."
   (let* ((root (ucm-namespace-fqn))
          (children (ucm-namespace-children)))
     (message "> %s" root)
@@ -332,9 +333,39 @@ Do something with FOR-EFFECT."
         (output "")                  ; result to display
         )
 
-    (setq output (format "ucm-eval-input: %s\n" input-string))
+    (setq output (pcase input-string
+                   ("list" (do-list-command))
+                   (t "baz\n")))
+    ;; (setq output (format "ucm-eval-input: [%s]\n" input-string))
     (setq output (concat output ucm-prompt-internal))
     (comint-output-filter (ucm-process) output)))
+
+;; ---------------------------------------------------------------------
+;; REPL commands
+
+(defun do-list-command-test ()
+  "foo bar baz\n")
+
+(defun do-list-command ()
+  "List the current directory."
+  (let ((output ""))
+    (let* ((root (ucm-namespace-fqn))
+           (children (ucm-namespace-children)))
+      (setq output (concat output (format "> %s\n" root)))
+      (mapc (lambda (child )
+              (let ((tag (gethash "tag" child))
+                    (contents (gethash "contents" child)))
+                (message "  : %s (%s entries)"
+                         (gethash "namespaceName" contents)
+                         (gethash "namespaceSize" contents))
+                (setq output (concat output (format "  : %s (%s entries)\n"
+                                                    (gethash "namespaceName" contents)
+                                                    (gethash "namespaceSize" contents))))
+                )
+              )
+            children)
+      )
+    (concat output "\n")))
 
 ;; ---------------------------------------------------------------------
 
