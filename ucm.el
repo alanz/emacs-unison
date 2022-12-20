@@ -23,8 +23,10 @@
   "Do the first things. To help with debugging."
   (interactive)
   (ucm-get-api-endpoint)
-  (ucm-api-list)
-  (ucm-list))
+  ;; (ucm-api-list)
+  (ucm--api-list)
+  ;; (ucm-list)
+  )
 
 (defun ucm-get-api-endpoint ()
   "Get the Unison API endpoint out of the *shell* buffer."
@@ -48,9 +50,9 @@
   api-endpoint
   )
 
-(defun ucm-call-api-endpoint (verb)
-  "Access the API endpoint VERB using the URL."
-  (let ((url (concat api-endpoint "/api/" verb))
+(defun ucm-call-api-endpoint (verb &optional params)
+  "Access the API endpoint VERB using the PARAMS."
+  (let ((url (concat api-endpoint "/api/" verb (params-string params)))
         (headers '(("Content-Type" . "application/json")
                    ("Accept" . "application/json"))))
     (with-current-buffer
@@ -61,13 +63,178 @@
         (let ((json-object-type 'hash-table))
           (json-read))))))
 
+(defun params-string (params)
+  "Turn the list of PARAMS into a query string."
+  (if params
+      (let ((res "?")
+            (not-first nil))
+        (dolist (p params)
+          (message "p:%s" p)
+          (if not-first
+              (setq res (concat res (format "&%s=%s" (car p) (cadr p))))
+            (setq res (concat res (format "%s=%s" (car p) (cadr p))))
+            (setq not-first t)))
+        res)
+    ""))
+
+
+;; ---------------------------------------------------------------------
+;; Closer to what mastodon.el does
+
+
+(defun ucm--response ()
+  "Capture response buffer content as string."
+  (with-current-buffer (current-buffer)
+    (buffer-substring-no-properties (point-min) (point-max))))
+
+(defun ucm--response-body (pattern)
+  "Return substring matching PATTERN from `ucm--response'."
+  (let ((resp (ucm--response)))
+    (string-match pattern resp)
+    (match-string 0 resp)))
+
+(defun ucm--status ()
+  "Return HTTP Response Status Code from `ucm--response'."
+  (let* ((status-line (ucm--response-body "^HTTP/1.*$")))
+    (string-match "[0-9][0-9][0-9]" status-line)
+    (match-string 0 status-line)))
+
+
+(defun ucm--http-triage (response success)
+  "Determine if RESPONSE was successful. Call SUCCESS if successful.
+
+Message status and JSON error from RESPONSE if unsuccessful."
+  (let ((status (with-current-buffer response
+                  (ucm--status))))
+    (if (string-prefix-p "2" status)
+        (funcall success)
+      ;; don't switch to buffer, just with-current-buffer the response:
+      ;; (switch-to-buffer response)
+      ;; 404 sometimes returns http response so --process-json fails:
+      (if (string-prefix-p "404" status)
+          (message "Error %s: page not found" status)
+        (let ((json-response (with-current-buffer response
+                               (ucm--process-json))))
+          (message "Error %s: %s" status (alist-get 'error json-response)))))))
+
+
+(defun ucm-call-api-endpoint2 (verb &optional params)
+  "Access the API endpoint VERB using the PARAMS."
+  (let ((url (concat api-endpoint "/api/" verb (ucm--build-params-string params)))
+        (headers '(("Content-Type" . "application/json")
+                   ("Accept" . "application/json"))))
+    (url-retrieve-synchronously url)))
+
+(defun ucm--build-params-string (params)
+  "Build a request parameters string from parameters alist PARAMS."
+  ;; (url-build-query-string args nil))
+  ;; url-build-query-string adds 'nil' to empty params so lets stay with our
+  ;; own:
+  (if params
+      (concat "?"
+              (mapconcat (lambda (p)
+                           (concat (url-hexify-string (car p))
+                                   "="
+                                   (url-hexify-string (cdr p))))
+                         params
+                         "&"))
+    ""))
+
+(defun ucm--get-response (verb &optional params no-headers silent vector)
+  "Make synchronous GET request using VERB. Return JSON and response headers.
+PARAMS is an alist of any extra parameters to send with the request.
+SILENT means don't message.
+NO-HEADERS means don't collect http response headers.
+VECTOR means return json arrays as vectors."
+  ;; (with-current-buffer (ucm-call-api-endpoint2 verb params silent)
+  (with-current-buffer (ucm-call-api-endpoint2 verb params)
+    (ucm--process-response no-headers vector)))
+
+(defun ucm--get-json (verb &optional params silent vector)
+  "Return only JSON data from VERB api request.
+PARAMS is an alist of any extra parameters to send with the request.
+SILENT means don't message.
+VECTOR means return json arrays as vectors."
+  (car (ucm--get-response verb params :no-headers silent vector)))
+
+(defun ucm--process-response (&optional no-headers vector)
+  "Process http response.
+Return a cons of JSON list and http response headers.
+If NO-HEADERS is non-nil, just return the JSON.
+VECTOR means return json arrays as vectors."
+  ;; view raw response:
+  ;; (switch-to-buffer (current-buffer))
+  (message "status:%s" (ucm--status))
+  (let ((status (ucm--status)))
+    (if (string-prefix-p "2" status)
+        (let ((headers (unless no-headers
+                         (ucm--process-headers))))
+          (goto-char (point-min))
+          (re-search-forward "^$" nil 'move)
+          (let ((json-array-type (if vector 'vector 'list))
+                (json-string
+                 (decode-coding-string
+                  (buffer-substring-no-properties (point) (point-max))
+                  'utf-8)))
+            (kill-buffer)
+            (unless (or (string-empty-p json-string) (null json-string))
+              `(,(json-read-from-string json-string) . ,headers))))
+      (message "got status:%s" status))))
+
+(defun ucm--process-headers ()
+  "Return an alist of http response headers."
+  (switch-to-buffer (current-buffer))
+  (goto-char (point-min))
+  (let* ((head-str (buffer-substring-no-properties
+                    (point-min)
+                    (re-search-forward "^$" nil 'move)))
+         (head-list (split-string head-str "\n")))
+    (mapcar (lambda (x)
+              (let ((list (split-string x ": ")))
+                (cons (car list) (cadr list))))
+            head-list)))
+
+;; ---------------------------------------------------------------------
+;; API
+
+(defun ucm--api-list (&optional params)
+  "Call the UCM LIST endpoint with optional PARAMS.
+
+PARAMETERS
+
+- rootBranch
+     - **Values**: *#abc123*
+     - **Description**: The hash or hash prefix of the namespace
+         root. If left absent, the most recent root will be used.
+- relativeTo
+     - **Values**: **
+     - **Description**: The namespace relative to which names
+         will be resolved and displayed. If left absent, the root
+         namespace will be used.E.g. base.List
+- namespace
+     - **Values**: **
+     - **Description**: The namespace required by the endpoint.If
+         left absent, the relativeTo namespace will be used.E.g.
+         base.List"
+  (let ((result (ucm--get-json "list" params)))
+    (message "result:%s" result)
+    (setf (ucm-codebase-list ucm-result) result)))
+
+
+;; get-projects
+(defun ucm--api-projects(&optional params)
+  "Call the PROJECTS endpoint with optional PARAMS."
+  (with-ucm-api-endpoint
+   (let ((result (ucm--get-json "projects" params)))
+     (setf (ucm-codebase-projects ucm-result) result))))
+
+
 ;; ---------------------------------------------------------------------
 ;; Data structures
 
 (cl-defstruct ucm-codebase
-  (list nil))
-
-(defalias 'make-lsp-client 'make-lsp--client)
+  (list nil)
+  (projects nil))
 
 (defvar ucm-result (make-ucm-codebase))
 
@@ -77,43 +244,16 @@
 
 (defun ucm-namespace-fqn ()
   "Get the UCM fully qualified namespace."
-  (gethash "namespaceListingFQN" (ucm-codebase-list ucm-result)))
+  (alist-get 'namespaceListingFQN (ucm-codebase-list ucm-result)))
 
 (defun ucm-namespace-hash ()
   "Get the hash of the UCM namespace."
-  (gethash "namespaceListingHash" (ucm-codebase-list ucm-result)))
+  (alist-get 'namespaceListingHash (ucm-codebase-list ucm-result)))
 
 (defun ucm-namespace-children ()
-  (gethash "namespaceListingChildren" (ucm-codebase-list ucm-result)))
+  "Get the hash of the UCM namespace children."
+  (alist-get 'namespaceListingChildren (ucm-codebase-list ucm-result)))
 
-(defun ucm-list ()
-  "List the current directory."
-  (let* ((root (ucm-namespace-fqn))
-         (children (ucm-namespace-children)))
-    (message "> %s" root)
-    (mapc (lambda (child )
-            ;; (message "  : %s" child)
-            ;; (message "  : %s" (gethash "tag" child))
-            ;; (message "  : %s" (gethash "contents" child))
-            (let ((tag (gethash "tag" child))
-                  (contents (gethash "contents" child)))
-                  ;; (message "  : %s" (gethash "tag" child))
-                  ;; (message "  : %s" (gethash "contents" child))
-                  (message "  : %s (%s entries)"
-                           (gethash "namespaceName" contents)
-                           (gethash "namespaceSize" contents))
-                  )
-            )
-          children)
-    ;; (maphash (lambda (key value)
-    ;;        (message "%s: %s" key value))
-    ;;      child)
-    nil
-    )
-  ;; (maphash (lambda (key value)
-  ;;        (message "%s: %s" key value))
-  ;;      children)
-  )
 
 ;; ---------------------------------------------------------------------
 ;; API calls
@@ -126,23 +266,7 @@
         ,@body)
     (message "api-endpoint not set")))
 
-(defun ucm-api-list()
-  "Call the LIST endpoint."
-  (with-ucm-api-endpoint
-   (let ((result (ucm-call-api-endpoint "list")))
-     (setf (ucm-codebase-list ucm-result) result))))
-
-;; get-projects
-(defun ucm-api-get-projects()
-  "Call the PROJECTS endpoint."
-  (with-ucm-api-endpoint
-   (let ((result (ucm-call-api-endpoint "projects")))
-     (setq ucm-result result))))
-
-(defun show-ucm-result ()
-  (maphash (lambda (key value)
-             (message "%s: %s" key value))
-           ucm-result))
+;; ---------------------------------------------------------------------
 
 ;; ---------------------------------------------------------------------
 ;; REPL
@@ -343,9 +467,6 @@ Do something with FOR-EFFECT."
 ;; ---------------------------------------------------------------------
 ;; REPL commands
 
-(defun do-list-command-test ()
-  "foo bar baz\n")
-
 (defun do-list-command ()
   "List the current directory."
   (let ((output ""))
@@ -353,14 +474,14 @@ Do something with FOR-EFFECT."
            (children (ucm-namespace-children)))
       (setq output (concat output (format "> %s\n" root)))
       (mapc (lambda (child )
-              (let ((tag (gethash "tag" child))
-                    (contents (gethash "contents" child)))
+              (let ((tag (alist-get 'tag child))
+                    (contents (alist-get 'contents child)))
                 (message "  : %s (%s entries)"
-                         (gethash "namespaceName" contents)
-                         (gethash "namespaceSize" contents))
+                         (alist-get 'namespaceName contents)
+                         (alist-get 'namespaceSize contents))
                 (setq output (concat output (format "  : %s (%s entries)\n"
-                                                    (gethash "namespaceName" contents)
-                                                    (gethash "namespaceSize" contents))))
+                                                    (alist-get 'namespaceName contents)
+                                                    (alist-get 'namespaceSize contents))))
                 )
               )
             children)
@@ -446,6 +567,7 @@ Do something with FOR-EFFECT."
 Switches to the buffer named BUF-NAME if provided (`*ucm*' by default),
 or creates it if it does not exist."
   (interactive)
+  (ucm-start)
   (let (old-point
         (buf-name (or buf-name "*ucm*")))
     (unless (comint-check-proc buf-name)
