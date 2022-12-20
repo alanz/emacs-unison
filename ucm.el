@@ -16,6 +16,7 @@
 (require 'comint)
 (require 'json)
 (require 'unisonlang-mode)
+(require 'parsec)
 
 (defvar api-endpoint nil)
 
@@ -23,9 +24,7 @@
   "Do the first things. To help with debugging."
   (interactive)
   (ucm-get-api-endpoint)
-  ;; (ucm-api-list)
   (ucm--api-list)
-  ;; (ucm-list)
   )
 
 (defun ucm-get-api-endpoint ()
@@ -224,6 +223,7 @@ PARAMETERS
 ;; get-projects
 (defun ucm--api-projects(&optional params)
   "Call the PROJECTS endpoint with optional PARAMS."
+  (message "ucm--api-projects:params=%s" params)
   (with-ucm-api-endpoint
    (let ((result (ucm--get-json "projects" params)))
      (setf (ucm-codebase-projects ucm-result) result))))
@@ -415,6 +415,7 @@ Blah blah FOR-EFFECT"
 ;;; Other bindings
 
 ;; ---------------------------------------------------------------------
+
 (defun ucm-return (&optional for-effect)
   "Newline and indent, or evaluate the sexp before the prompt.
 Complete sexps are evaluated; for incomplete sexps inserts a newline
@@ -438,6 +439,7 @@ simply inserts a newline."
               (newline 1)))
           (newline-and-indent)))
     (newline)))
+
 ;; ---------------------------------------------------------------------
 
 (defun ucm-eval-input (input-string &optional for-effect)
@@ -457,18 +459,70 @@ Do something with FOR-EFFECT."
         (output "")                  ; result to display
         )
 
-    (setq output (pcase input-string
-                   ("list" (do-list-command))
-                   (t "baz\n")))
+    ;; (setq output (pcase (parse-command (substring-no-properties input-string 0 (length input-string)))
+    (setq output (pcase (parse-command input-string)
+                   (`("list" ,target) (do-list-command target))
+                   (`("cd"   ,target) (do-cd-command target))
+                   (_ "unknown command\n")))
     ;; (setq output (format "ucm-eval-input: [%s]\n" input-string))
     (setq output (concat output ucm-prompt-internal))
     (comint-output-filter (ucm-process) output)))
 
 ;; ---------------------------------------------------------------------
+;; Commmand parser
+
+(defun parse-command (input)
+  "Parse the INPUT, returning a command or an error."
+  (message "parse-command:input=[%s]" input)
+  (message "parse-command:output=[%s]" (parsec-with-input input
+                                         (parse-one-command)))
+  (parsec-with-input input
+    (parse-one-command)))
+
+(defun parse-one-command ()
+  "Parse a single REPL command."
+  (parsec-or (parse-list-command)
+             (parse-cd-command)
+             ))
+
+(defun parse-list-command ()
+  "Parse the LIST command."
+  (parsec-or (parsec-str "ls")
+             (parsec-str "list"))
+  (let ((target (parsec-optional
+                 (progn
+                   (parsec-many1 (parsec-str " "))
+                   (parse-namespace)))))
+    (list "list" target)))
+
+(defun parse-cd-command ()
+  "Parse the CD command."
+  (parsec-str "cd")
+  (let ((target (parsec-optional
+                 (progn
+                   (parsec-many1 (parsec-str " "))
+                   (parse-namespace)))))
+    (list "cd" target)))
+
+(defun parse-namespace ()
+  "Parse a name space."
+  (parsec-many1-as-string
+   (parsec-or (parsec-letter)
+              (parsec-digit)
+              (parsec-str ".")
+              (parsec-str "_"))))
+
+
+
+;; ---------------------------------------------------------------------
 ;; REPL commands
 
-(defun do-list-command ()
-  "List the current directory."
+(defun do-list-command (&optional target)
+  "List the current directory, or TARGET if given."
+  (message "do-list-command:target=%s" target)
+  (when target
+    (let ((namespace target))
+      (ucm--api-list `(("namespace" . ,target)))))
   (let ((output ""))
     (let* ((root (ucm-namespace-fqn))
            (children (ucm-namespace-children)))
@@ -476,17 +530,26 @@ Do something with FOR-EFFECT."
       (mapc (lambda (child )
               (let ((tag (alist-get 'tag child))
                     (contents (alist-get 'contents child)))
-                (message "  : %s (%s entries)"
-                         (alist-get 'namespaceName contents)
-                         (alist-get 'namespaceSize contents))
-                (setq output (concat output (format "  : %s (%s entries)\n"
+                (pcase tag
+                  ("Subnamespace" (setq output (concat output (format "  %s (%s entries)\n"
                                                     (alist-get 'namespaceName contents)
-                                                    (alist-get 'namespaceSize contents))))
-                )
-              )
+                                                    (alist-get 'namespaceSize contents)))))
+                  ("TermObject" (setq output
+                                      (concat output (format "  %s (%s)\n"
+                                                             (alist-get 'termName contents)
+                                                             (alist-get 'segment
+                                                                        (car
+                                                                         (alist-get 'termType contents)))))))
+                  (_ (setq output (concat (format "unknown tag :[%s]\n" tag)))))))
             children)
       )
     (concat output "\n")))
+
+(defun do-cd-command (&optional target)
+  "Change namespace to the root, or to TARGET if given."
+  (message "do-cd-command:target=%s" target)
+  (format "do-cd-command:target=%s\n" target)
+  )
 
 ;; ---------------------------------------------------------------------
 
