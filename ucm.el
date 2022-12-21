@@ -122,6 +122,7 @@ Message status and JSON error from RESPONSE if unsuccessful."
   (let ((url (concat api-endpoint "/api/" verb (ucm--build-params-string params)))
         (headers '(("Content-Type" . "application/json")
                    ("Accept" . "application/json"))))
+    (message "url:%s" url)
     (url-retrieve-synchronously url)))
 
 (defun ucm--build-params-string (params)
@@ -197,13 +198,25 @@ VECTOR means return json arrays as vectors."
 ;; Data structures
 
 (cl-defstruct ucm-codebase
+  ;; API call result storage
   (list nil)
-  (projects nil))
+  (projects nil)
+  (namespaces nil)
+
+  ;; Current namespace hash
+  (namespace-hash nil)
+  ;; Current namespace fully qualified name
+  (namespace-fqn nil)
+  )
 
 (defvar ucm-result (make-ucm-codebase))
 
 ;; ---------------------------------------------------------------------
 ;; API
+
+;; note: openapi data at
+;; http://127.0.0.1:43227/gupirOfTikPmG_He/api/openapi.json
+
 
 (defun ucm--api-list (&optional params)
   "Call the UCM LIST endpoint with optional PARAMS.
@@ -227,6 +240,23 @@ PARAMETERS
   (let ((result (ucm--get-json "list" params)))
     (message "result:%s" result)
     (setf (ucm-codebase-list ucm-result) result)))
+
+
+(defun ucm--api-definitions-terms (&optional params)
+  "Call the UCM LIST endpoint with optional PARAMS."
+  (let ((result (ucm--get-json "/definitions/terms/by-hash/#en5ir2eel4/summary" params)))
+    (message "result:%s" result)
+    ))
+
+(defun ucm--api-namespaces (namespace &optional params)
+  "Call the UCM 'namespaces' endpoint with NAMESPACE and optional PARAMS."
+  (message "ucm--api-namespaces:(%s, %s)" namespace params)
+  (let ((result (ucm--get-json (format "namespaces/%s" namespace) params)))
+    (message "result:%s" result)
+    ;; (setf (ucm-codebase-list       ucm-result) result)
+    (setf (ucm-codebase-namespaces ucm-result) result)
+    (message "after result")
+    ))
 
 
 ;; get-projects
@@ -512,6 +542,15 @@ Do something with FOR-EFFECT."
 ;; ---------------------------------------------------------------------
 ;; Pulling out data
 
+(defun flatten-string-list (list)
+  "Taka a LIST of strings and flatten it into a single string."
+  (mapconcat (lambda (x) x) list ""))
+
+(defun resolve-segment (segment)
+  "Take a SEGMENT string, and turn it into something displayable to the user."
+  (string-remove-prefix "##" segment) ; ##Nat -> Nat
+  )
+
   ;; 14. d0302_fun      (Nat -> Set Char -> [Text] -> [Set Char])
 
   ;; ((tag . TermObject)
@@ -547,7 +586,7 @@ Do something with FOR-EFFECT."
       (pcase item
         (`(,annotation (segment . ,segment)) (progn
                                  (message "extract-segments: matched:1:[%s]" segment)
-                                 (push segment res)))
+                                 (push (resolve-segment segment) res)))
         (_ (message "item pcase:%s" item))
         )
       ;; (let ((segment (alist-get 'segment item)))
@@ -557,7 +596,7 @@ Do something with FOR-EFFECT."
       ;; )
     )
     (message "extract-segments:res=%s" res)
-    res)
+    (flatten-string-list (reverse res)))
   )
 
 ;; ---------------------------------------------------------------------
@@ -566,9 +605,17 @@ Do something with FOR-EFFECT."
 (defun do-list-command (&optional target)
   "List the current directory, or TARGET if given."
   (message "do-list-command:target=%s" target)
-  (when target
-    (let ((namespace target))
-      (ucm--api-list `(("namespace" . ,target)))))
+  (if target
+      (let ((namespace target))
+        (message "do-list-command:target=%s" target)
+        (ucm--api-list `(("namespace" . ,target))))
+    (let ((namespace-hash (ucm-codebase-namespace-hash ucm-result))
+          (namespace-fqn (ucm-codebase-namespace-fqn ucm-result)))
+        (message "do-list-command:namespace-fqn=%s" namespace-fqn)
+        (if (or (not namespace-fqn)
+                 (equal namespace-fqn ""))
+          (ucm--api-list)
+        (ucm--api-list `(("namespace" . ,namespace-fqn))))))
   (let ((output ""))
     (let* ((root (ucm-namespace-fqn))
            (children (ucm-namespace-children)))
@@ -578,22 +625,18 @@ Do something with FOR-EFFECT."
                     (contents (alist-get 'contents child)))
                 (message "tag:%s" tag)
                 (pcase tag
-                  ("Subnamespace" (setq output (concat output (format "  %s (%s entries)\n"
+                  ("Subnamespace" (setq output (concat output (format "  %s/ (%s entries)\n"
                                                     (alist-get 'namespaceName contents)
                                                     (alist-get 'namespaceSize contents)))))
                   ("TermObject" (setq output
-                                      (concat output (format "  %s (%s)(%s)\n"
+                                      (concat output (format "  %s (%s)\n"
                                                              (alist-get 'termName contents)
-                                                             (alist-get 'segment
-                                                                        (car
-                                                                         (alist-get 'termType contents)))
                                                              (extract-segments (alist-get 'termType contents))
                                                              ))))
                   ("TypeObject"    (setq output
                                          (concat output
                                                  (format "TypeObject:%s\n"
                                                          (extract-segments (alist-get 'contents contents))))))
-                  ("Subnamespace"  (setq output (concat output (format "Subnamespace\n" ))))
                   ("HashQualifier" (setq output (concat output (format "HashQualifier\n" ))))
                   ("DelimiterChar" (setq output (concat output (format "DelimiterChar\n" ))))
                   (_               (setq output (concat output (format "unknown tag :[%s]\n" tag)))))))
@@ -618,8 +661,20 @@ Do something with FOR-EFFECT."
 (defun do-cd-command (&optional target)
   "Change namespace to the root, or to TARGET if given."
   (message "do-cd-command:target=%s" target)
-  (format "do-cd-command:target=%s\n" target)
-  )
+  (let (namespace-hash namespace-fqn)
+    (if (or (not target) (equal "." target))
+        (progn
+          (ucm--api-list)
+          (setq namespace-hash (alist-get 'namespaceListingHash (ucm-codebase-list ucm-result)))
+          (setq namespace-fqn (alist-get 'namespaceListingFQN (ucm-codebase-list ucm-result))))
+      (progn
+        (ucm--api-namespaces target)
+        (format "do-cd-command:result=%s\n" (ucm-codebase-namespaces ucm-result))
+        (setq namespace-hash (alist-get 'hash (ucm-codebase-namespaces ucm-result)))
+        (setq namespace-fqn (alist-get 'fqn (ucm-codebase-namespaces ucm-result)))))
+    (setf (ucm-codebase-namespace-fqn  ucm-result) namespace-fqn)
+    (setf (ucm-codebase-namespace-hash ucm-result) namespace-hash)
+    (format "do-cd-command:target=%s\n: fqn:%s\n: hash:%s\n" target namespace-fqn namespace-hash)))
 
 ;; ---------------------------------------------------------------------
 

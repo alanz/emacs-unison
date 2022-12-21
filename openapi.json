@@ -1,0 +1,2830 @@
+{
+  "components": {
+    "schemas": {
+      "Alignment": {
+        "properties": {
+          "result": {
+            "$ref": "#/components/schemas/Result"
+          },
+          "score": {
+            "maximum": 9223372036854776000,
+            "minimum": -9223372036854776000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "score",
+          "result"
+        ],
+        "type": "object"
+      },
+      "AnnotatedText_Element": {
+        "items": {
+          "$ref": "#/components/schemas/Segment_Element"
+        },
+        "type": "array"
+      },
+      "DefinitionDisplayResults": {
+        "properties": {
+          "missingDefinitions": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "termDefinitions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TermDefinition"
+            },
+            "type": "object"
+          },
+          "typeDefinitions": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/TypeDefinition"
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "termDefinitions",
+          "typeDefinitions",
+          "missingDefinitions"
+        ],
+        "type": "object"
+      },
+      "DisplayObject_(AnnotatedText_Element)_(AnnotatedText_Element)": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "BuiltinObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "MissingObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "UserObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "DisplayObject_(AnnotatedText_Element)_Src": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "BuiltinObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "MissingObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Src"
+              },
+              "tag": {
+                "enum": [
+                  "UserObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "Doc": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "Word"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Code"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "CodeBlock"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Bold"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Italic"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Strikethrough"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Style"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Anchor"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Blockquote"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Blankline"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Linebreak"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "SectionBreak"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Tooltip"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Aside"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Callout"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "items": {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  "type": "array"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Table"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "boolean"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Folded"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Doc"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Paragraph"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Doc"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "BulletedList"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "format": "int64",
+                    "maximum": 18446744073709552000,
+                    "minimum": 0,
+                    "type": "integer"
+                  },
+                  {
+                    "items": {
+                      "$ref": "#/components/schemas/Doc"
+                    },
+                    "type": "array"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "NumberedList"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "items": {
+                      "$ref": "#/components/schemas/Doc"
+                    },
+                    "type": "array"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Section"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "NamedLink"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  },
+                  {
+                    "$ref": "#/components/schemas/Doc"
+                  }
+                ],
+                "maxItems": 3,
+                "minItems": 3,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Image"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/SpecialForm"
+              },
+              "tag": {
+                "enum": [
+                  "Special"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Doc"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Join"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Doc"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "UntitledSection"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Doc"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Column"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/Doc"
+              },
+              "tag": {
+                "enum": [
+                  "Group"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "Element": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "NumericLiteral"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "TextLiteral"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "BytesLiteral"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "CharLiteral"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "BooleanLiteral"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Blank"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Var"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "TypeReference"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "DataConstructorReference"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "AbilityConstructorReference"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "TermReference"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/SeqOp"
+              },
+              "tag": {
+                "enum": [
+                  "Op"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "AbilityBraces"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "ControlKeyword"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "TypeOperator"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "BindingEquals"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "TypeAscriptionColon"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DataTypeKeyword"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DataTypeParams"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Unit"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DataTypeModifier"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "UseKeyword"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "UsePrefix"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "UseSuffix"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "HashQualifier"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DelayForceChar"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DelimiterChar"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Parenthesis"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "LinkKeyword"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DocDelimiter"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "DocKeyword"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "FoundResult": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/FoundTerm"
+              },
+              "tag": {
+                "enum": [
+                  "FoundTermResult"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/FoundType"
+              },
+              "tag": {
+                "enum": [
+                  "FoundTypeResult"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "FoundTerm": {
+        "properties": {
+          "bestFoundTermName": {
+            "type": "string"
+          },
+          "namedTerm": {
+            "$ref": "#/components/schemas/NamedTerm"
+          }
+        },
+        "required": [
+          "bestFoundTermName",
+          "namedTerm"
+        ],
+        "type": "object"
+      },
+      "FoundType": {
+        "properties": {
+          "bestFoundTypeName": {
+            "type": "string"
+          },
+          "namedType": {
+            "$ref": "#/components/schemas/NamedType"
+          },
+          "typeDef": {
+            "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_(AnnotatedText_Element)"
+          }
+        },
+        "required": [
+          "bestFoundTypeName",
+          "typeDef",
+          "namedType"
+        ],
+        "type": "object"
+      },
+      "HashQualified_Name": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "NameOnly"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "HashOnly"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "HashQualified"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "HashQualified_NameSegment": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "NameOnly"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "type": "string"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "HashQualified"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "MediaSource": {
+        "properties": {
+          "mediaSourceMimeType": {
+            "type": "string"
+          },
+          "mediaSourceUrl": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "mediaSourceUrl"
+        ],
+        "type": "object"
+      },
+      "NamedNamespace": {
+        "properties": {
+          "namespaceHash": {
+            "type": "string"
+          },
+          "namespaceName": {
+            "type": "string"
+          },
+          "namespaceSize": {
+            "maximum": 9223372036854776000,
+            "minimum": -9223372036854776000,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "namespaceName",
+          "namespaceHash",
+          "namespaceSize"
+        ],
+        "type": "object"
+      },
+      "NamedPatch": {
+        "properties": {
+          "patchName": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "patchName"
+        ],
+        "type": "object"
+      },
+      "NamedTerm": {
+        "properties": {
+          "termHash": {
+            "type": "string"
+          },
+          "termName": {
+            "$ref": "#/components/schemas/HashQualified_NameSegment"
+          },
+          "termTag": {
+            "$ref": "#/components/schemas/TermTag"
+          },
+          "termType": {
+            "$ref": "#/components/schemas/AnnotatedText_Element"
+          }
+        },
+        "required": [
+          "termName",
+          "termHash",
+          "termTag"
+        ],
+        "type": "object"
+      },
+      "NamedType": {
+        "properties": {
+          "typeHash": {
+            "type": "string"
+          },
+          "typeName": {
+            "$ref": "#/components/schemas/HashQualified_NameSegment"
+          },
+          "typeTag": {
+            "$ref": "#/components/schemas/TypeTag"
+          }
+        },
+        "required": [
+          "typeName",
+          "typeHash",
+          "typeTag"
+        ],
+        "type": "object"
+      },
+      "NamespaceDetails": {
+        "properties": {
+          "fqn": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "readme": {
+            "$ref": "#/components/schemas/Doc"
+          }
+        },
+        "required": [
+          "fqn",
+          "hash"
+        ],
+        "type": "object"
+      },
+      "NamespaceListing": {
+        "properties": {
+          "namespaceListingChildren": {
+            "items": {
+              "$ref": "#/components/schemas/NamespaceObject"
+            },
+            "type": "array"
+          },
+          "namespaceListingFQN": {
+            "type": "string"
+          },
+          "namespaceListingHash": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "namespaceListingFQN",
+          "namespaceListingHash",
+          "namespaceListingChildren"
+        ],
+        "type": "object"
+      },
+      "NamespaceObject": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/NamedNamespace"
+              },
+              "tag": {
+                "enum": [
+                  "Subnamespace"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/NamedTerm"
+              },
+              "tag": {
+                "enum": [
+                  "TermObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/NamedType"
+              },
+              "tag": {
+                "enum": [
+                  "TypeObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/NamedPatch"
+              },
+              "tag": {
+                "enum": [
+                  "PatchObject"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "ProjectListing": {
+        "properties": {
+          "hash": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "owner": {
+            "$ref": "#/components/schemas/ProjectOwner"
+          }
+        },
+        "required": [
+          "owner",
+          "name",
+          "hash"
+        ],
+        "type": "object"
+      },
+      "ProjectOwner": {
+        "type": "string"
+      },
+      "Ref_(Text,(DisplayObject_(AnnotatedText_Element)_Src))": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_Src"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Term"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "type": "string"
+                  },
+                  {
+                    "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_Src"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Type"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "Result": {
+        "properties": {
+          "segments": {
+            "items": {
+              "$ref": "#/components/schemas/ResultSegment"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "segments"
+        ],
+        "type": "object"
+      },
+      "ResultSegment": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "Gap"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "type": "string"
+              },
+              "tag": {
+                "enum": [
+                  "Match"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "Segment_Element": {
+        "properties": {
+          "annotation": {
+            "$ref": "#/components/schemas/Element"
+          },
+          "segment": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "segment"
+        ],
+        "type": "object"
+      },
+      "SeqOp": {
+        "enum": [
+          "Cons",
+          "Snoc",
+          "Concat"
+        ],
+        "type": "string"
+      },
+      "SpecialForm": {
+        "oneOf": [
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Ref_(Text,(DisplayObject_(AnnotatedText_Element)_Src))"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Source"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/Ref_(Text,(DisplayObject_(AnnotatedText_Element)_Src))"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "FoldedSource"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "Example"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "ExampleBlock"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "Link"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": {
+                  "$ref": "#/components/schemas/AnnotatedText_Element"
+                },
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Signature"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "SignatureInline"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/AnnotatedText_Element"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AnnotatedText_Element"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Eval"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "$ref": "#/components/schemas/AnnotatedText_Element"
+                  },
+                  {
+                    "$ref": "#/components/schemas/AnnotatedText_Element"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "EvalInline"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "Embed"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/AnnotatedText_Element"
+              },
+              "tag": {
+                "enum": [
+                  "EmbedInline"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "items": [
+                  {
+                    "items": {
+                      "$ref": "#/components/schemas/MediaSource"
+                    },
+                    "type": "array"
+                  },
+                  {
+                    "additionalProperties": {
+                      "type": "string"
+                    },
+                    "type": "object"
+                  }
+                ],
+                "maxItems": 2,
+                "minItems": 2,
+                "type": "array"
+              },
+              "tag": {
+                "enum": [
+                  "Video"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "additionalProperties": {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                "type": "object"
+              },
+              "tag": {
+                "enum": [
+                  "FrontMatter"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "Src": {
+        "items": [
+          {
+            "$ref": "#/components/schemas/AnnotatedText_Element"
+          },
+          {
+            "$ref": "#/components/schemas/AnnotatedText_Element"
+          }
+        ],
+        "maxItems": 2,
+        "minItems": 2,
+        "type": "array"
+      },
+      "TermDefinition": {
+        "properties": {
+          "bestTermName": {
+            "type": "string"
+          },
+          "defnTermTag": {
+            "$ref": "#/components/schemas/TermTag"
+          },
+          "signature": {
+            "$ref": "#/components/schemas/AnnotatedText_Element"
+          },
+          "termDefinition": {
+            "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_(AnnotatedText_Element)"
+          },
+          "termDocs": {
+            "items": {
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/Doc"
+                }
+              ],
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "termNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "termNames",
+          "bestTermName",
+          "defnTermTag",
+          "termDefinition",
+          "signature",
+          "termDocs"
+        ],
+        "type": "object"
+      },
+      "TermSummary": {
+        "properties": {
+          "displayName": {
+            "$ref": "#/components/schemas/HashQualified_Name"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_(AnnotatedText_Element)"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/TermTag"
+          }
+        },
+        "required": [
+          "displayName",
+          "hash",
+          "summary",
+          "tag"
+        ],
+        "type": "object"
+      },
+      "TermTag": {
+        "oneOf": [
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Doc"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Test"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "tag": {
+                "enum": [
+                  "Plain"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag"
+            ],
+            "type": "object"
+          },
+          {
+            "properties": {
+              "contents": {
+                "$ref": "#/components/schemas/TypeTag"
+              },
+              "tag": {
+                "enum": [
+                  "Constructor"
+                ],
+                "type": "string"
+              }
+            },
+            "required": [
+              "tag",
+              "contents"
+            ],
+            "type": "object"
+          }
+        ],
+        "type": "object"
+      },
+      "TypeDefinition": {
+        "properties": {
+          "bestTypeName": {
+            "type": "string"
+          },
+          "defnTypeTag": {
+            "$ref": "#/components/schemas/TypeTag"
+          },
+          "typeDefinition": {
+            "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_(AnnotatedText_Element)"
+          },
+          "typeDocs": {
+            "items": {
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "string"
+                },
+                {
+                  "$ref": "#/components/schemas/Doc"
+                }
+              ],
+              "maxItems": 3,
+              "minItems": 3,
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "typeNames": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "required": [
+          "typeNames",
+          "bestTypeName",
+          "defnTypeTag",
+          "typeDefinition",
+          "typeDocs"
+        ],
+        "type": "object"
+      },
+      "TypeSummary": {
+        "properties": {
+          "displayName": {
+            "$ref": "#/components/schemas/HashQualified_Name"
+          },
+          "hash": {
+            "type": "string"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/DisplayObject_(AnnotatedText_Element)_(AnnotatedText_Element)"
+          },
+          "tag": {
+            "$ref": "#/components/schemas/TypeTag"
+          }
+        },
+        "required": [
+          "displayName",
+          "hash",
+          "summary",
+          "tag"
+        ],
+        "type": "object"
+      },
+      "TypeTag": {
+        "enum": [
+          "Ability",
+          "Data"
+        ],
+        "type": "string"
+      }
+    }
+  },
+  "info": {
+    "description": "Provides operations for querying and manipulating a Unison codebase.",
+    "license": {
+      "name": "MIT",
+      "url": "https://github.com/unisonweb/unison/blob/trunk/LICENSE"
+    },
+    "title": "Unison Codebase Manager API",
+    "version": "1.0"
+  },
+  "openapi": "3.0.0",
+  "paths": {
+    "/definitions/terms/by-hash/{hash}/summary": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "hash",
+            "required": true,
+            "schema": {
+              "example": "@abcdef",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "example": "base.List.map",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "relativeTo",
+            "required": false,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "renderWidth",
+            "required": false,
+            "schema": {
+              "maximum": 9223372036854776000,
+              "minimum": -9223372036854776000,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/TermSummary"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `renderWidth` or `relativeTo` or `rootBranch` or `name`"
+          },
+          "404": {
+            "description": "`hash` not found"
+          }
+        }
+      }
+    },
+    "/definitions/types/by-hash/{hash}/summary": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "hash",
+            "required": true,
+            "schema": {
+              "example": "@abcdef",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "name",
+            "required": false,
+            "schema": {
+              "example": "base.List.map",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "relativeTo",
+            "required": false,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "renderWidth",
+            "required": false,
+            "schema": {
+              "maximum": 9223372036854776000,
+              "minimum": -9223372036854776000,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/TypeSummary"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `renderWidth` or `relativeTo` or `rootBranch` or `name`"
+          },
+          "404": {
+            "description": "`hash` not found"
+          }
+        }
+      }
+    },
+    "/find": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "relativeTo",
+            "required": false,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "maximum": 9223372036854776000,
+              "minimum": -9223372036854776000,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "renderWidth",
+            "required": false,
+            "schema": {
+              "maximum": 9223372036854776000,
+              "minimum": -9223372036854776000,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "query",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "items": {
+                    "items": [
+                      {
+                        "$ref": "#/components/schemas/Alignment"
+                      },
+                      {
+                        "$ref": "#/components/schemas/FoundResult"
+                      }
+                    ],
+                    "maxItems": 2,
+                    "minItems": 2,
+                    "type": "array"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `query` or `renderWidth` or `limit` or `relativeTo` or `rootBranch`"
+          }
+        }
+      }
+    },
+    "/getDefinition": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "relativeTo",
+            "required": false,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "names",
+            "schema": {
+              "items": {
+                "example": "name@hash",
+                "type": "string"
+              },
+              "type": "array"
+            }
+          },
+          {
+            "in": "query",
+            "name": "renderWidth",
+            "required": false,
+            "schema": {
+              "maximum": 9223372036854776000,
+              "minimum": -9223372036854776000,
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "suffixifyBindings",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/DefinitionDisplayResults"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `suffixifyBindings` or `renderWidth` or `names` or `relativeTo` or `rootBranch`"
+          }
+        }
+      }
+    },
+    "/list": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "relativeTo",
+            "required": false,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "namespace",
+            "required": false,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/NamespaceListing"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `namespace` or `relativeTo` or `rootBranch`"
+          }
+        }
+      }
+    },
+    "/namespaces/{namespace}": {
+      "get": {
+        "parameters": [
+          {
+            "in": "path",
+            "name": "namespace",
+            "required": true,
+            "schema": {
+              "example": "base.List",
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "renderWidth",
+            "required": false,
+            "schema": {
+              "maximum": 9223372036854776000,
+              "minimum": -9223372036854776000,
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "$ref": "#/components/schemas/NamespaceDetails"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `renderWidth` or `rootBranch`"
+          },
+          "404": {
+            "description": "`namespace` not found"
+          }
+        }
+      }
+    },
+    "/projects": {
+      "get": {
+        "parameters": [
+          {
+            "in": "query",
+            "name": "rootBranch",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "in": "query",
+            "name": "owner",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json;charset=utf-8": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectListing"
+                  },
+                  "type": "array"
+                }
+              }
+            },
+            "description": "",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid `owner` or `rootBranch`"
+          }
+        }
+      }
+    }
+  }
+}
