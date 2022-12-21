@@ -194,6 +194,15 @@ VECTOR means return json arrays as vectors."
             head-list)))
 
 ;; ---------------------------------------------------------------------
+;; Data structures
+
+(cl-defstruct ucm-codebase
+  (list nil)
+  (projects nil))
+
+(defvar ucm-result (make-ucm-codebase))
+
+;; ---------------------------------------------------------------------
 ;; API
 
 (defun ucm--api-list (&optional params)
@@ -228,15 +237,6 @@ PARAMETERS
    (let ((result (ucm--get-json "projects" params)))
      (setf (ucm-codebase-projects ucm-result) result))))
 
-
-;; ---------------------------------------------------------------------
-;; Data structures
-
-(cl-defstruct ucm-codebase
-  (list nil)
-  (projects nil))
-
-(defvar ucm-result (make-ucm-codebase))
 
 ;; ----------------------------------------------------------------------
 
@@ -455,16 +455,13 @@ Do something with FOR-EFFECT."
   ;; stream to their evaluated value.  But that would have involved
   ;; more process coordination than I was happy to deal with.
   (message "ucm-eval-input: %s" input-string)
-  (let (
-        (output "")                  ; result to display
+  (let ((output "")                  ; result to display
         )
 
-    ;; (setq output (pcase (parse-command (substring-no-properties input-string 0 (length input-string)))
     (setq output (pcase (parse-command input-string)
                    (`("list" ,target) (do-list-command target))
                    (`("cd"   ,target) (do-cd-command target))
                    (_ "unknown command\n")))
-    ;; (setq output (format "ucm-eval-input: [%s]\n" input-string))
     (setq output (concat output ucm-prompt-internal))
     (comint-output-filter (ucm-process) output)))
 
@@ -512,7 +509,56 @@ Do something with FOR-EFFECT."
               (parsec-str ".")
               (parsec-str "_"))))
 
+;; ---------------------------------------------------------------------
+;; Pulling out data
 
+  ;; 14. d0302_fun      (Nat -> Set Char -> [Text] -> [Set Char])
+
+  ;; ((tag . TermObject)
+  ;;  (contents
+  ;;   (termHash . #i4n5lohv63j2rn6io5mjc19pg925p7skk5palm80i0mmodmksecbt8l0nu68lvi7c3uh15k9b89popfdbhr01gmqrv427kvhrlak2pg)
+  ;;   (termName . d0302_fun)
+  ;;   (termTag . Plain)
+  ;;   (termType
+  ;;    ((annotation (contents . ##Nat) (tag . HashQualifier)) (segment . ##Nat))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (tag . TypeOperator)) (segment . ->))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (contents . #prrhin67ce) (tag . HashQualifier)) (segment . #prrhin67ce))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (contents . ##Char) (tag . HashQualifier)) (segment . ##Char))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (tag . TypeOperator)) (segment . ->))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (tag . DelimiterChar)) (segment . [))
+  ;;     ((annotation (contents . ##Text) (tag . HashQualifier)) (segment . ##Text))
+  ;;     ((annotation (tag . DelimiterChar)) (segment . ]))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (tag . TypeOperator)) (segment . ->))
+  ;;    ((annotation) (segment .  ))
+  ;;    ((annotation (tag . DelimiterChar)) (segment . [)) ((annotation (contents . #prrhin67ce) (tag . HashQualifier)) (segment . #prrhin67ce)) ((annotation) (segment .  )) ((annotation (contents . ##Char) (tag . HashQualifier)) (segment . ##Char)) ((annotation (tag . DelimiterChar)) (segment . ])))))
+
+(defun extract-segments (contents)
+  "Extract all the `segment` markers from CONTENTS, recursively."
+  (message "extract-segments:contents=%s" contents)
+  (let (res)
+    (dolist (item contents)
+      (message "item:%s" item)
+      (pcase item
+        (`(,annotation (segment . ,segment)) (progn
+                                 (message "extract-segments: matched:1:[%s]" segment)
+                                 (push segment res)))
+        (_ (message "item pcase:%s" item))
+        )
+      ;; (let ((segment (alist-get 'segment item)))
+      ;;   (message "segment:%s" segment)
+      ;;   (if segment
+      ;;       (push segment res))
+      ;; )
+    )
+    (message "extract-segments:res=%s" res)
+    res)
+  )
 
 ;; ---------------------------------------------------------------------
 ;; REPL commands
@@ -530,20 +576,44 @@ Do something with FOR-EFFECT."
       (mapc (lambda (child )
               (let ((tag (alist-get 'tag child))
                     (contents (alist-get 'contents child)))
+                (message "tag:%s" tag)
                 (pcase tag
                   ("Subnamespace" (setq output (concat output (format "  %s (%s entries)\n"
                                                     (alist-get 'namespaceName contents)
                                                     (alist-get 'namespaceSize contents)))))
                   ("TermObject" (setq output
-                                      (concat output (format "  %s (%s)\n"
+                                      (concat output (format "  %s (%s)(%s)\n"
                                                              (alist-get 'termName contents)
                                                              (alist-get 'segment
                                                                         (car
-                                                                         (alist-get 'termType contents)))))))
-                  (_ (setq output (concat (format "unknown tag :[%s]\n" tag)))))))
+                                                                         (alist-get 'termType contents)))
+                                                             (extract-segments (alist-get 'termType contents))
+                                                             ))))
+                  ("TypeObject"    (setq output
+                                         (concat output
+                                                 (format "TypeObject:%s\n"
+                                                         (extract-segments (alist-get 'contents contents))))))
+                  ("Subnamespace"  (setq output (concat output (format "Subnamespace\n" ))))
+                  ("HashQualifier" (setq output (concat output (format "HashQualifier\n" ))))
+                  ("DelimiterChar" (setq output (concat output (format "DelimiterChar\n" ))))
+                  (_               (setq output (concat output (format "unknown tag :[%s]\n" tag)))))))
             children)
       )
     (concat output "\n")))
+
+
+;; tag:TypeObject
+;; tag:Subnamespace
+;; tag:TermObject
+;; tag:TypeObject
+;; tag:Subnamespace
+;; tag:TermObject [14 times]
+;; tag:Subnamespace [25 times]
+;; tag:TermObject [6 times]
+;; tag:Subnamespace
+;; tag:TermObject [7 times]
+;; tag:PatchObject
+;; tag:TermObject [17 times]
 
 (defun do-cd-command (&optional target)
   "Change namespace to the root, or to TARGET if given."
